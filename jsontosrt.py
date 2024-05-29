@@ -8,6 +8,8 @@ def words_to_srt(words):
     current_line = []
     current_line_start_time = None
     current_line_end_time = None
+    pause_threshold = 1.5  # Threshold for pause in seconds
+    previous_end = 0
 
     for word in words:
         if "start" in word and "end" in word:
@@ -63,6 +65,18 @@ def words_to_srt(words):
                     # Reset line and increment sequence number
                     current_line = []
                     sequence_number += 1
+
+        # Check for pause
+        if start_time - previous_end > pause_threshold:
+            start_formatted = format_time(previous_end)
+            end_formatted = format_time(start_time)
+            # Russian text for "ПАУЗА"
+            pause_text = "\u041F\u0410\u0423\u0417\u0410"
+            pause_entry = f"{sequence_number}\n{start_formatted} --> {end_formatted}\n{pause_text}\n\n"
+            srt_entries.append(pause_entry)
+            sequence_number += 1
+
+        previous_end = end_time
 
     return srt_entries
 
