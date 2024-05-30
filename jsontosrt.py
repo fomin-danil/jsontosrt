@@ -17,6 +17,16 @@ def words_to_srt(words):
             start_time = word["start"]
             end_time = word["end"]
 
+            # Check for pause
+            if start_time - previous_end >= pause_threshold:
+                start_formatted = format_time(previous_end)
+                end_formatted = format_time(start_time)
+                # Russian text for "ПАУЗА"
+                pause_text = "\u041F\u0410\u0423\u0417\u0410"
+                pause_entry = f"{sequence_number}\n{start_formatted} --> {end_formatted}\n{pause_text}\n\n"
+                srt_entries.append(pause_entry)
+                sequence_number += 1
+
             # Initialize start time for the current line
             if current_line_start_time is None:
                 current_line_start_time = start_time
@@ -44,6 +54,8 @@ def words_to_srt(words):
                     current_line_end_time = None
                     sequence_number += 1
 
+            previous_end = end_time
+
         else:
             # Handle words without explicit start and end times
             text = word["word"]
@@ -65,18 +77,6 @@ def words_to_srt(words):
                     # Reset line and increment sequence number
                     current_line = []
                     sequence_number += 1
-
-        # Check for pause
-        if start_time - previous_end > pause_threshold:
-            start_formatted = format_time(previous_end)
-            end_formatted = format_time(start_time)
-            # Russian text for "ПАУЗА"
-            pause_text = "\u041F\u0410\u0423\u0417\u0410"
-            pause_entry = f"{sequence_number}\n{start_formatted} --> {end_formatted}\n{pause_text}\n\n"
-            srt_entries.append(pause_entry)
-            sequence_number += 1
-
-        previous_end = end_time
 
     return srt_entries
 
